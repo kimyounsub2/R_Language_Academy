@@ -6,11 +6,16 @@ b + 20
 # <-(할당연산자) : alt + -
 # 실행 + enter
 # 전체 실행 : ctrl + alt + r
-# install.packages("ggplot2") 패키지 설치 처음만 설치하면 된다.
-library(ggplot2) # 패키지 로드 재실행시 로드시켜줘야 한다.
-library(dplyr)
-library(readxl) # 엑셀 불러오는 패키지
+
+install.packages("xts") # foreign 패키지 설치
 library(descr) # 빈도 분석 패키지
+library(foreign) # SPSS 파일 로드
+library(dplyr) # 전처리
+library(ggplot2) # 시각화
+library(readxl) # 엑셀 파일 불러오기
+library(plotly) # 인터랙티브 그래프 만들기
+library(dygraphs) # 인터랙티브 시계열 그래프 만들기
+library(xts) # 시간 순서 속성을 지니는 xts 데이터 타입으로 변경
 mpg <- as.data.frame(ggplot2::mpg)
 # console 창 삭제 : ctrl + L
 # ctrl + shift +c : 전체주석

@@ -32,7 +32,7 @@ data1 %>%
   select(선수명,팀,경기,타수) %>% 
   arrange(타수)
 
-##### 3회차######
+##### 3회차 ######
 # 1. 회사별로 "suv" 자동차의 도시 및 고속도로 통합 연비 평균을 구해 내림차순으로 정렬하고, 1~5위까지 출력하기
 
 mpg %>%
@@ -179,3 +179,57 @@ ggplot(data = data, aes(x = 이름, y = 점수)) + geom_col(color= 'black', fill
 data3 <- read.csv('data/학생별과목별성적_3기_3명.csv',fileEncoding = "euc-kr", header = T, sep = ',')
 View(data3)
 ggplot(data = data3, aes(x = 과목, y = 점수,group = 이름, color = 이름)) + geom_line() +geom_point(size=5,  pch = 15)
+
+##### 5회차 #####
+# 1. 결혼 유/무와 소득은 관계가 있을까요? (0:비해당, 1:유배우자, 5: 미혼 )
+# 1-1 혼인상태 데이터 검토 및 전처리
+class(welfare$marriage)
+table(welfare$marriage)
+
+welfare$group_marriage <- ifelse(welfare$marriage == 1, "유배우자",
+                                 ifelse(welfare$marriage == 5, "미혼",NA))
+table(welfare$group_marriage)
+table(is.na(welfare$group_marriage))
+# 1-2 qplot로 나타내기
+qplot(welfare$group_marriage)
+
+# 2. 결혼 유/무와 남녀 소득의 관계를 나타내세요.
+# 2-1 결혼유무와 남녀 소득의 월급 평균표
+sex_marriage <- welfare %>% 
+  filter(!is.na(group_marriage)) %>% 
+  group_by(group_marriage, sex ) %>% 
+  summarise(n = n())
+
+sex_marriage
+# 2-2 그래프로 나타내기
+ggplot(data = sex_marriage, aes(x=group_marriage, y = n ,fill =sex )) +geom_col(position = "dodge") +
+  scale_x_discrete(limits = c("유배우자", "미혼")) +
+  scale_fill_brewer(palette = "Set1")
+
+# 3. 교육 수준별 월급차이 - 교육 정도에 따른 급여 차이가 나는지 확인해 보세요.
+# 3-1 교육 수준별 평균 소득
+class(welfare$h10_g6)
+table(welfare$h10_g6)
+
+welfare$Education <- ifelse(welfare$h10_g6 == 1, "미취학(만 7세미만)",
+                            ifelse(welfare$h10_g6 == 2, "무학(만 7세이상)",
+                                   ifelse(welfare$h10_g6 == 3, "초등학교",
+                                          ifelse(welfare$h10_g6 == 4, "중학교",
+                                                 ifelse(welfare$h10_g6 == 5, "고등학교", 
+                                                        ifelse(welfare$h10_g6 == 6, "전문대학",
+                                                               ifelse(welfare$h10_g6 == 7, "대학교",
+                                                                      ifelse(welfare$h10_g6 == 8, "대학원(석사)",
+                                                                             ifelse(welfare$h10_g6 == 9, "대학원(박사)",NA)))))))))
+table(welfare$Education)
+table(is.na(welfare$Education))
+
+Education_income <- welfare %>%
+  filter(!is.na(Education) & !is.na(income)) %>%
+  group_by(Education) %>%
+  summarise(mean_income = mean(income))
+Education_income
+
+# 3-2 그래프로 나타내기
+ggplot(data = Education_income, aes(x = reorder(Education, mean_income), y = mean_income)) +
+  geom_col()
+
