@@ -233,3 +233,58 @@ Education_income
 ggplot(data = Education_income, aes(x = reorder(Education, mean_income), y = mean_income)) +
   geom_col()
 
+
+##### 6회차 #####
+# wordcloud로 데이터 분석(jeju.txt 이용)
+
+# 1. 최다 빈도 단어를 막대그래프로 나타내시고
+# 파일 불러오기
+txt <- readLines("data/jeju.txt")
+head(txt)
+# 특수문자 제거
+txt <- str_replace_all(txt, "\\W", " ")
+head(txt)
+# 제주도여행이네 제주관련 단어 빈칸으로 변경
+aa1 <- gsub("제주", "",txt)
+# 명사들을 추출한다.
+nouns <- extractNoun(aa1)
+nouns
+# 추출한 명사 list 를 문자열 벡터로 변환, 단어별 빈도표 생성
+wordcount <- table(unlist(nouns))
+wordcount
+# 데이터 프레임으로 변환 - 문자열,character로 가져와라
+df_word <- as.data.frame(wordcount, stringsAsFactors = F)
+head(df_word)
+# 변수명 수정
+df_word <- rename(df_word,
+                  word = Var1,
+                  freq = Freq)
+head(df_word,20)
+# 두글자 이상 단어 추출
+df_word <- filter(df_word, nchar(word) >= 2)
+View(df_word)
+# 탑 20개만 조회되게 
+top_20 <- df_word %>%
+  arrange(desc(freq)) %>%
+  head(20)
+top_20
+# 빈도 순서 변수 생성
+order <- arrange(top_20, freq)$word
+# 탑20 막대그래프 
+ggplot(data = top_20, aes(x = word, y = freq)) +
+  geom_col(fill = "skyblue") +
+  coord_flip() +scale_x_discrete(limit = order) + 
+  geom_text(aes(label = freq), hjust = 1.5)
+
+# 2.
+pal <- brewer.pal(8,"Dark2") 
+set.seed(1234) 
+wordcloud(words = df_word$word, 
+          freq = df_word$freq, 
+          min.freq = 10, 
+          max.words = 200, 
+          random.order = F, 
+          rot.per = .1, 
+          scale = c(6, 0.2),
+          colors = pal) 
+
