@@ -288,3 +288,34 @@ wordcloud(words = df_word$word,
           scale = c(6, 0.2),
           colors = pal) 
 
+
+##### 7회차 #####
+# 강원도 음식점 정보를 지도상에 표현해 보세요,
+# 강원도으뜸음식점.csv
+kfood <- read.csv("data/강원도으뜸음식점.csv", header = T)
+kfood
+library(dplyr)
+kfood <- rename(kfood,
+                LON = 경도,
+                LAT = 위도,
+                NAME = 소재지지번주소)
+leaflet(kfood) %>% 
+  setView(lng=mean(kfood$LON)-0.03, lat=mean(kfood$LAT), zoom = 6) %>%
+  addProviderTiles("Esri.WorldTopoMap") %>% 
+  addCircleMarkers(lng = ~LON,lat = ~LAT, label = ~NAME, radius = 10,
+                   popup=paste( "주소:",kfood$소재지도로명주소
+                                ,"<br>","주요메뉴:",kfood$주요메뉴
+                                ,"<br>","업태:",kfood$업태
+                                ,"<br>"))
+
+# 전기차 충전소 위치를 지도상에 표현해 보세요.
+loc <- read.csv("data/car.csv", header = T)
+loc
+loc <- rename(loc,
+              LON = 경도,
+              LAT = 위도,
+              NAME = 충전소명)
+leaflet(loc) %>% 
+  setView(lng = 128.639976, lat = 35.918978, zoom = 6) %>% 
+  addProviderTiles("Esri.WorldTopoMap") %>%
+  addCircleMarkers(lng = ~LON,lat = ~LAT, label = ~NAME, radius = 10,clusterOptions = markerClusterOptions())
