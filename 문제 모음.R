@@ -360,3 +360,57 @@ leaflet(coffee) %>%
   addProviderTiles("Esri.WorldTopoMap") %>%
   addMarkers(lng = ~lon,lat = ~lat,clusterOptions = markerClusterOptions(),popup=paste("사업장명:",coffee$사업장명,"<br>",
                                                                                        "주소:",coffee$소재지전체주소,"<br>"))
+
+##### 9 회차 #####
+# 1.파일(line5.xlsx)을 로드하시고, 위도와 경도로 변환하세요.
+line5 <- read_excel("data/line5.xlsx")
+line5 <- line5 %>% 
+  select("역명","도로명주소")
+line5_addr <- geocode(line5$도로명주소)
+line5 <- cbind(line5, line5_addr)
+head(line5)
+
+# 2. 강서구 아파트 데이터 (apartment.xlsx)에서 전용면적=85인 아파트만 추출
+apartment <- read_excel("data/apartment.xlsx", skip = 15)
+head(apartment)
+
+apartment <- rename(apartment, "전용면적" = "전용면적(㎡)")
+head(apartment)
+class(apartment$전용면적)
+
+apartment$전용면적 <- as.numeric(apartment$전용면적)
+
+apartment$전용면적 = round(apartment$전용면적)
+head(apartment)
+
+apartment_85 <- subset(apartment, 전용면적 == "85")
+head(apartment_85)
+
+apartment_85 <- apartment_85[!duplicated(apartment_85$단지명),]
+head(apart_data_85)
+
+apartment_data_85 <- apartment_85 %>% 
+  select("단지명", "시군구", "번지", "전용면적")
+head(apartment_data_85)
+
+apart_addr <- paste(apartment_data_85$"시군구", apartment_data_85$"번지")
+head(apart_addr)
+
+apart_addr <- paste(apartment_data_85$"시군구", apartment_data_85$"번지") %>% 
+  data.frame()
+
+apart_addr <- rename(apart_addr, "주소" = ".")
+
+apart_addr_code <- as.character(apart_addr$"주소") %>% 
+  geocode()
+
+# 3. 산점도를 이용해 지하철역 위치 표시 및 역명을 표시하시고 25평 아파트를 지도상에 표현해 보세요.
+final <- 
+  cbind(apartment_85, apart_addr, apart_addr_code) %>% 
+  select("단지명", "전용면적", "주소", lon, lat)
+
+leaflet(final) %>% 
+  setView(lng = 126.85, lat = 37.55, zoom = 14) %>% 
+  addProviderTiles('Esri.WorldTopoMap') %>%
+  addMarkers(lng = ~lon, lat = ~lat, label = ~단지명,clusterOptions = markerClusterOptions()) %>% 
+  addMarkers(lng = ~line5$lon, lat = ~line5$lat, label = ~line5$역명,)
