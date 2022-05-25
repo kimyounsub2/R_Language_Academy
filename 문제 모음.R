@@ -319,3 +319,44 @@ leaflet(loc) %>%
   setView(lng = 128.639976, lat = 35.918978, zoom = 6) %>% 
   addProviderTiles("Esri.WorldTopoMap") %>%
   addCircleMarkers(lng = ~LON,lat = ~LAT, label = ~NAME, radius = 10,clusterOptions = markerClusterOptions())
+
+##### 8회차 #####
+# 주소만으로 지도 표시하기
+line5 <- read_excel("line5.xlsx")
+line5 <- line5 %>% 
+  select("역명","도로명주소")
+line5_addr <- geocode(line5$도로명주소)
+line5 <- cbind(line5, line5_addr)
+head(line5)
+
+
+#강남구 커피숍 데이터 분석 트리맵으로 표현해 보세요.
+# 1) 트리맵으로 표현,
+library(readxl)
+coffee <- read_excel("gangnam_coffee.xlsx")
+head(coffee)
+
+addr <- substr(coffee$소재지전체주소,10,14)
+head(addr)
+addr_trim <- gsub(" ","",addr)# 공백제거
+head(addr_trim)
+str(addr_trim)
+addr_count <- addr_trim %>% table() %>% data.frame()
+addr_count
+
+addr_count$num <- paste(addr_count$.,addr_count$Freq, sep = "\n")
+head(addr_count)
+
+treemap(addr_count, index = "num" ,vSize = "Freq",palette = brewer.pal(n=8,"Purples"),title = "강남구 커피숍 데이터 분석")
+a <- arrange(addr_count,desc(Freq)) %>% head(10)
+a
+# 2. 리플렛으로 지도상에 표현해보세요
+coffee_addr <- geocode(coffee$소재지전체주소)
+coffee <- cbind(coffee, coffee_addr)
+head(coffee)
+
+leaflet(coffee) %>% 
+  setView(lng = 127.0505, lat = 37.50184, zoom = 6) %>% 
+  addProviderTiles("Esri.WorldTopoMap") %>%
+  addMarkers(lng = ~lon,lat = ~lat,clusterOptions = markerClusterOptions(),popup=paste("사업장명:",coffee$사업장명,"<br>",
+                                                                                       "주소:",coffee$소재지전체주소,"<br>"))

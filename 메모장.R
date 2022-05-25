@@ -7,7 +7,7 @@ b + 20
 # 실행 + enter
 # 전체 실행 : ctrl + alt + r
 
-install.packages("xts") # foreign 패키지 설치
+install.packages("dygraphs") # foreign 패키지 설치
 library(descr) # 빈도 분석 패키지
 library(foreign) # SPSS 파일 로드
 library(dplyr) # 전처리
