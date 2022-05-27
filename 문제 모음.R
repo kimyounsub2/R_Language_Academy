@@ -361,7 +361,7 @@ leaflet(coffee) %>%
   addMarkers(lng = ~lon,lat = ~lat,clusterOptions = markerClusterOptions(),popup=paste("사업장명:",coffee$사업장명,"<br>",
                                                                                        "주소:",coffee$소재지전체주소,"<br>"))
 
-##### 9 회차 #####
+##### 9회차 #####
 # 1.파일(line5.xlsx)을 로드하시고, 위도와 경도로 변환하세요.
 line5 <- read_excel("data/line5.xlsx")
 line5 <- line5 %>% 
@@ -414,3 +414,53 @@ leaflet(final) %>%
   addProviderTiles('Esri.WorldTopoMap') %>%
   addMarkers(lng = ~lon, lat = ~lat, label = ~단지명,clusterOptions = markerClusterOptions()) %>% 
   addMarkers(lng = ~line5$lon, lat = ~line5$lat, label = ~line5$역명,)
+##### 10회차 #####
+# 지역별 미세먼지 농도 비교하기
+library(readxl)
+library(dplyr)
+# 미세먼지 데이터 - 영등포구와 용산구를 비교해서
+dustdata <- read_excel("data/dustdata.xlsx")
+View(dustdata)
+str(dustdata)
+
+dustdata_anal <- dustdata %>% filter(area %in% c("영등포구","용산구"))
+View(dustdata_anal)
+
+count(dustdata_anal, yyyymmdd) %>% arrange(desc(n))
+count(dustdata_anal, area) %>% arrange(desc(n))
+
+dust_anal_area_ydp <- subset(dustdata_anal, area == "영등포구")
+dust_anal_area_ydp
+dust_anal_area_yg <- subset(dustdata_anal, area == "용산구")
+dust_anal_area_yg
+
+library(psych)
+
+describe(dust_anal_area_ydp$finedust)
+describe(dust_anal_area_yg$finedust)
+dust_anal_area_ydp
+# 1.boxplot로 나타내기 
+boxplot(dust_anal_area_ydp$finedust, dust_anal_area_yg$finedust,
+        main = "finedust_compare", xlab = "AREA", name = c("영등포구","중구"),
+        ylab = "FINEDUST_PM", col = c("blue","green"))
+# 2. t.test로 가설을 검정해서 결론을 토출하기
+t.test(data = dustdata_anal, finedust ~ area, var.equal = T)
+View(dustdata_anal)
+
+# 3. 시계열 그래프 그리기
+dust_anal_area_ydp <- rename(dust_anal_area_ydp, "date" = "yyyymmdd")
+dust_anal_area_yg <- rename(dust_anal_area_yg, "date" = "yyyymmdd")
+dustdata_anal
+
+library(xts)
+ydp <- xts(dust_anal_area_ydp$finedust, order.by =as.Date(dust_anal_area_ydp$date))
+
+head(ydp)
+dygraph(ydp)
+
+yg <- xts(dust_anal_area_yg$finedust, order.by =as.Date(dust_anal_area_yg$date))
+
+final <- cbind(ydp,yg)
+
+dygraph(final) %>% dyRangeSelector()
+
